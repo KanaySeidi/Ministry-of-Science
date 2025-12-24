@@ -1,7 +1,6 @@
 import gerb from "@/assets/img/gerb.png";
 import LanguageSwitcher from "@/components/molecules/LangSwitcher";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
 
 const Header = () => {
   const { t } = useTranslation();
