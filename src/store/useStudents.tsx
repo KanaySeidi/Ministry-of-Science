@@ -3,7 +3,13 @@ import { create } from "zustand";
 export type Level = "bachelor" | "master";
 export type Course = 1 | 2 | 3 | 4;
 
+type ForeignStudent = {
+  country: string;
+  count: number;
+};
+
 type CourseData = {
+  foreign: ForeignStudent[];
   education: {
     grantCount: number;
     contractCount: number;
@@ -46,6 +52,7 @@ type State = {
   setLevel: (level: Level) => void;
   setSelectedCourse: (course: Course) => void;
 
+  // 🔹 для обычных секций
   updateCourse: (
     level: Level,
     course: Course,
@@ -54,10 +61,22 @@ type State = {
     value: number
   ) => void;
 
+  // 🔹 для foreign[]
+  addForeignStudent: (level: Level, course: Course) => void;
+  updateForeignStudent: (
+    level: Level,
+    course: Course,
+    index: number,
+    field: "country" | "count",
+    value: string | number
+  ) => void;
+  removeForeignStudent: (level: Level, course: Course, index: number) => void;
+
   reset: () => void;
 };
 
 const emptyCourse = (): CourseData => ({
+  foreign: [{ country: "", count: 0 }],
   education: {
     grantCount: 0,
     contractCount: 0,
@@ -115,6 +134,7 @@ export const useStudentDirectionStore = create<State>((set) => ({
 
   setSelectedCourse: (course) => set({ selectedCourse: course }),
 
+  // 🔹 обычные секции
   updateCourse: (level, course, section, field, value) =>
     set((state) => ({
       coursesByLevel: {
@@ -127,6 +147,59 @@ export const useStudentDirectionStore = create<State>((set) => ({
               ...state.coursesByLevel[level][course][section],
               [field]: value,
             },
+          },
+        },
+      },
+    })),
+
+  // 🔹 foreign[]
+  addForeignStudent: (level, course) =>
+    set((state) => ({
+      coursesByLevel: {
+        ...state.coursesByLevel,
+        [level]: {
+          ...state.coursesByLevel[level],
+          [course]: {
+            ...state.coursesByLevel[level][course],
+            foreign: [
+              ...state.coursesByLevel[level][course].foreign,
+              { country: "", count: 0 },
+            ],
+          },
+        },
+      },
+    })),
+
+  updateForeignStudent: (level, course, index, field, value) =>
+    set((state) => {
+      const list = [...state.coursesByLevel[level][course].foreign];
+      list[index] = { ...list[index], [field]: value };
+
+      return {
+        coursesByLevel: {
+          ...state.coursesByLevel,
+          [level]: {
+            ...state.coursesByLevel[level],
+            [course]: {
+              ...state.coursesByLevel[level][course],
+              foreign: list,
+            },
+          },
+        },
+      };
+    }),
+
+  removeForeignStudent: (level, course, index) =>
+    set((state) => ({
+      coursesByLevel: {
+        ...state.coursesByLevel,
+        [level]: {
+          ...state.coursesByLevel[level],
+          [course]: {
+            ...state.coursesByLevel[level][course],
+            foreign: state.coursesByLevel[level][course].foreign.filter(
+              (_, i) => i !== index
+            ),
           },
         },
       },

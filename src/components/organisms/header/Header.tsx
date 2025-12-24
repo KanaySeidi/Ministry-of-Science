@@ -1,12 +1,10 @@
 import gerb from "@/assets/img/gerb.png";
 import LanguageSwitcher from "@/components/molecules/LangSwitcher";
-import { NAV_ITEMS } from "@/utils/navs";
 import { useTranslation } from "react-i18next";
-import { NavLink, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const Header = () => {
   const { t } = useTranslation();
-  const { id } = useParams();
 
   return (
     <>
@@ -20,26 +18,7 @@ const Header = () => {
               <p>{t("header.line3")}</p>
             </div>
           </div>
-          {/* <nav className="flex gap-4 text-sm">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.key}
-                to={`/info/${id}/${item.to}`}
-                className={({ isActive }) =>
-                  `
-                px-3 py-1 rounded-md transition
-                ${
-                  isActive
-                    ? "text-white"
-                    : "text-white hover:text-sinii hover:bg-slate-100"
-                }
-              `
-                }
-              >
-                {t(item.text)}
-              </NavLink>
-            ))}
-          </nav> */}
+
           <div>
             <LanguageSwitcher />
           </div>

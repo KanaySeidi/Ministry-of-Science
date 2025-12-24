@@ -1,265 +1,417 @@
-import { type Values } from "@/types";
-import { useState } from "react";
-import { Formik, FieldArray, Field, Form } from "formik";
-import ConfirmModal from "@/components/organisms/confirmModal/ConfirmModal";
+import { DIRECTIONS } from "@/utils/direction";
+import { useStudentDirectionStore } from "@/store/useStudents";
+import { useTranslation } from "react-i18next";
 
-type Props = {
-  values: Values;
-};
+export default function ForeignStudents() {
+  const {
+    direction,
+    selectedCourse,
+    coursesByLevel,
+    setDirectionCode,
+    setLevel,
+    setSelectedCourse,
+    updateCourse,
+    addForeignStudent,
+    updateForeignStudent,
+    removeForeignStudent,
+    reset,
+  } = useStudentDirectionStore();
 
-export const initialValues: Values = {
-  univKey: "",
-  programs: [
-    {
-      name: "",
-      courses: { "1": 0, "2": 0, "3": 0, "4": 0 },
-      contract_count: 0,
-      contract_price: 0,
-      grant_count: 0,
-      foreign_budget_count: 0,
-      total: 0,
-      graduates_2024_2025: 0,
-      full_time_edu: {},
-      distance_edu: {},
-      evening_edu: {},
-    },
-  ],
-  foreign_students: [],
-  scholarships: [],
-  mtb: {},
-};
+  const { t } = useTranslation();
 
-function ForeignStudents({ values }: Props) {
-  const handleSubmit = (values: Values) => {
-    console.log("SUBMIT", values);
-    alert("Данные подготовлены (см. консоль)");
+  const level = direction.level;
+  const currentCourse = level && coursesByLevel[level][selectedCourse];
+
+  const inputValue = (v: number) => (v === 0 ? "" : v);
+
+  const handleCodeChange = (code: string) => {
+    const found = DIRECTIONS.find((d) => d.code === code);
+    setDirectionCode(code, found?.name || "");
   };
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [toRemoveIndex, setToRemoveIndex] = useState<number | null>(null);
+  const handleSubmit = () => {
+    if (!direction.level) return;
+
+    const payload = {
+      direction,
+      courses: coursesByLevel[direction.level],
+    };
+
+    console.log("SUBMIT PAYLOAD", payload);
+    alert("Данные отправлены (см. консоль)");
+    reset();
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values }) => (
-          <Form className="space-y-6">
-            <FieldArray name="programs">
-              {({ push, remove }) => (
-                <div className="space-y-4">
-                  <h2 className="font-semibold">Студенты</h2>
-                  {values.programs.map((p, idx) => (
-                    <div key={idx} className="p-4 border rounded">
-                      <div className="flex gap-2">
-                        <div className="w-full">
-                          <label className="text-sinii font-medium">
-                            Наименование направление подготовки/специальности
-                          </label>
-                          <Field
-                            name={`programs.${idx}.name`}
-                            className="w-full border p-2"
-                          />
-                        </div>
-                        <div className="flex flex-col justify-start">
-                          <button
-                            onClick={() => {
-                              setToRemoveIndex(idx);
-                              setConfirmOpen(true);
-                            }}
-                            type="button"
-                            className="text-white bg-red-500 px-2 py-1 rounded-md hover:bg-red-400 cursor-pointer"
-                          >
-                            Удалить
-                          </button>
-                        </div>
-                        <ConfirmModal
-                          open={confirmOpen}
-                          title="Удалить программу?"
-                          description="Вы точно хотите удалить эту программу? Данные будут потеряны."
-                          confirmLabel="Удалить"
-                          cancelLabel="Отмена"
-                          onCancel={() => {
-                            setConfirmOpen(false);
-                            setToRemoveIndex(null);
-                          }}
-                          onConfirm={() => {
-                            if (toRemoveIndex !== null) {
-                              remove(toRemoveIndex);
-                            }
-                            setConfirmOpen(false);
-                            setToRemoveIndex(null);
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <h2>Иностранные студенты</h2>
-                        <label>Название</label>
-                        <Field
-                          type="text"
-                          name={`programs.${idx}.courses`}
-                          className="w-full border p-1"
-                        />
-                      </div>
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="border p-4 rounded space-y-3">
+        <input
+          placeholder={t("studentDirection.codePlaceholder")}
+          className="border p-2 w-full"
+          value={direction.code}
+          onChange={(e) => handleCodeChange(e.target.value)}
+        />
 
-                      <div className="grid grid-cols-4 gap-2 mt-2">
-                        {[1, 2, 3, 4].map((c) => (
-                          <div key={c}>
-                            <label>Курс {c} </label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.courses.${c}.male`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                        ))}
-                      </div>
+        {direction.name && (
+          <p className="font-medium text-sinii">{direction.name}</p>
+        )}
 
-                      <div className="mt-5 grid items-start gap-x-2">
-                        <div className="grid grid-cols-2 gap-x-2">
-                          <h1>hello</h1>
-                        </div>
-                        <div className="grid grid-cols-2 mt-5 gap-x-2">
-                          <div>
-                            <label>Контракт</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.contract_count`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                          <div>
-                            <label>Стоимость контракта</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.contract_price`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                        </div>
-                      </div>
+        <div className="flex gap-6">
+          <label className="flex gap-2 items-center">
+            <input
+              type="radio"
+              checked={direction.level === "bachelor"}
+              onChange={() => setLevel("bachelor")}
+            />
+            {t("studentDirection.bachelor")}
+          </label>
 
-                      <div className="mt-5">
-                        <p className="text-sinii font-medium py-2">Из них</p>
-                        <div className="grid grid-cols-5 items-start gap-x-2">
-                          <div>
-                            <label>Очное (М)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.full_time_edu.male`}
-                              className="w-full border p-1"
-                            />
-                            <label>Очное (Ж)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.full_time_edu.female`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                          <div>
-                            <label>Заочное (М)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.distance_edu.male`}
-                              className="w-full border p-1"
-                            />
-                            <label>Заочное (Ж)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.distance_edu.female`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                          <div>
-                            <label>Вечерное (М)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.evening_edu.male`}
-                              className="w-full border p-1"
-                            />
-                            <label>Вечерное (Ж)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.evening_edu.female`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                          <div>
-                            <label>Сироты (М)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.courses.male`}
-                              className="w-full border p-1"
-                            />
-                            <label>Сироты (Ж)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.courses.female`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                          <div>
-                            <label>ЛОВЗ (М)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.courses.male`}
-                              className="w-full border p-1"
-                            />
-                            <label>ЛОВЗ (Ж)</label>
-                            <Field
-                              type="number"
-                              name={`programs.${idx}.courses.female`}
-                              className="w-full border p-1"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <div>
-                          <label>
-                            количество выпускников за 2024 - 2025 учебный год
-                          </label>
-                          <Field
-                            type="number"
-                            name={`programs.${idx}.graduates_2024_2025`}
-                            className="w-full border p-1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="flex justify-between">
+          <label className="flex gap-2 items-center">
+            <input
+              type="radio"
+              checked={direction.level === "master"}
+              onChange={() => setLevel("master")}
+            />
+            {t("studentDirection.master")}
+          </label>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        {[1, 2, 3, 4].map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => setSelectedCourse(c as any)}
+            className={`px-3 py-1 border rounded placeholder:text-gray-400 ${
+              selectedCourse === c ? "bg-sinii text-white" : ""
+            }`}
+          >
+            {c} курс
+          </button>
+        ))}
+      </div>
+
+      {level && currentCourse && (
+        <>
+          <div className="border p-4 rounded space-y-4">
+            <h4 className="font-medium text-sinii">{t("header.nav2")}</h4>
+
+            {currentCourse.foreign.map((item, idx) => (
+              <div key={idx} className="flex flex-col gap-2">
+                <div className="flex flex-col">
+                  <div className="flex justify-between py-2">
+                    <label>{t("studentDirection.sitizen")}</label>
                     <button
                       type="button"
-                      onClick={() => push(initialValues.programs[0])}
-                      className="px-3 py-1  text-green-600 cursor-pointer"
+                      onClick={() =>
+                        removeForeignStudent(level, selectedCourse, idx)
+                      }
+                      className="text-red-500 cursor-pointer"
                     >
-                      <div className="flex gap-2">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          className="lucide lucide-plus-icon lucide-plus"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="M12 5v14" />
-                        </svg>
-                        <p>Добавить направление</p>
-                      </div>
+                      Удалить страну
                     </button>
                   </div>
+                  <input
+                    type="text"
+                    placeholder={t("studentDirection.countryPlaceholder")}
+                    className="border p-2 w-full placeholder:text-gray-400"
+                    value={item.country}
+                    onChange={(e) =>
+                      updateForeignStudent(
+                        level,
+                        selectedCourse,
+                        idx,
+                        "country",
+                        e.target.value
+                      )
+                    }
+                  />
                 </div>
-              )}
-            </FieldArray>
-          </Form>
-        )}
-      </Formik>
+
+                <div>
+                  <label>{t("studentDirection.sitizenCount")}</label>
+                  <input
+                    type="number"
+                    placeholder={t("studentDirection.amountPlaceholder")}
+                    className="border p-2 w-full placeholder:text-gray-400"
+                    value={item.count === 0 ? "" : item.count}
+                    onChange={(e) =>
+                      updateForeignStudent(
+                        level,
+                        selectedCourse,
+                        idx,
+                        "count",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => addForeignStudent(level, selectedCourse)}
+              className="text-green-600 cursor-pointer"
+            >
+              + {t("studentDirection.addCountry")}
+            </button>
+          </div>
+          <div className="border p-4 rounded space-y-4">
+            <h3 className="font-semibold">{t("studentDirection.education")}</h3>
+
+            <h4 className="font-medium text-sinii">
+              {t("studentDirection.financing")}
+            </h4>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label>{t("studentDirection.contract")}</label>
+                <input
+                  type="number"
+                  placeholder={t("studentDirection.amountPlaceholder")}
+                  className="border p-1 w-full placeholder:text-gray-400"
+                  value={inputValue(currentCourse.education.contractCount)}
+                  onChange={(e) =>
+                    updateCourse(
+                      level,
+                      selectedCourse,
+                      "education",
+                      "contractCount",
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <label>{t("studentDirection.contractPrice")}</label>
+                <input
+                  type="number"
+                  placeholder={t("studentDirection.pricePlaceholder")}
+                  className="border p-1 w-full placeholder:text-gray-400"
+                  value={inputValue(currentCourse.education.contractPrice)}
+                  onChange={(e) =>
+                    updateCourse(
+                      level,
+                      selectedCourse,
+                      "education",
+                      "contractPrice",
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            <div>
+              <label>{t("studentDirection.foreignBudget")}</label>
+              <input
+                type="number"
+                placeholder={t("studentDirection.amountPlaceholder")}
+                className="border p-1 w-full placeholder:text-gray-400"
+                value={inputValue(currentCourse.education.foreignBudgetCount)}
+                onChange={(e) =>
+                  updateCourse(
+                    level,
+                    selectedCourse,
+                    "education",
+                    "foreignBudgetCount",
+                    e.target.value === "" ? 0 : Number(e.target.value)
+                  )
+                }
+              />
+            </div>
+
+            <h4 className="font-medium text-sinii">
+              {t("studentDirection.educationForm")}
+            </h4>
+
+            {[
+              ["fullTime", t("studentDirection.fullTime")],
+              ["distance", t("studentDirection.distance")],
+              ["evening", t("studentDirection.evening")],
+            ].map(([key, label]) => (
+              <div key={key}>
+                <label>{label}</label>
+                <input
+                  type="number"
+                  placeholder={t("studentDirection.amountPlaceholder")}
+                  className="border p-1 w-full placeholder:text-gray-400"
+                  value={inputValue((currentCourse.education as any)[key])}
+                  onChange={(e) =>
+                    updateCourse(
+                      level,
+                      selectedCourse,
+                      "education",
+                      key,
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="border p-4 rounded space-y-4">
+            <h3 className="font-semibold">{t("studentDirection.living")}</h3>
+
+            {[
+              ["dormitory", t("studentDirection.dormitory")],
+              ["rent", t("studentDirection.rent")],
+            ].map(([key, label]) => (
+              <div key={key}>
+                <label>{label}</label>
+                <input
+                  type="number"
+                  placeholder={t("studentDirection.amountPlaceholder")}
+                  className="border p-1 w-full placeholder:text-gray-400"
+                  value={inputValue((currentCourse.living as any)[key])}
+                  onChange={(e) =>
+                    updateCourse(
+                      level,
+                      selectedCourse,
+                      "living",
+                      key,
+                      e.target.value === "" ? 0 : Number(e.target.value)
+                    )
+                  }
+                />
+              </div>
+            ))}
+          </div>
+          <div className="border p-4 rounded space-y-4">
+            <h4 className="font-semibold">{t("studentDirection.social")}</h4>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Сироты */}
+              <div className="space-y-2">
+                <p className="font-medium text-sinii">
+                  {t("studentDirection.orphans")}
+                </p>
+
+                <div>
+                  <label>{t("studentDirection.male")}</label>
+                  <input
+                    type="number"
+                    placeholder={t("studentDirection.amountPlaceholder")}
+                    className="border p-1 w-full placeholder:text-gray-400"
+                    value={inputValue(currentCourse.social.orphansMale)}
+                    onChange={(e) =>
+                      updateCourse(
+                        level,
+                        selectedCourse,
+                        "social",
+                        "orphansMale",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>{t("studentDirection.female")}</label>
+                  <input
+                    type="number"
+                    placeholder={t("studentDirection.amountPlaceholder")}
+                    className="border p-1 w-full placeholder:text-gray-400"
+                    value={inputValue(currentCourse.social.orphansFemale)}
+                    onChange={(e) =>
+                      updateCourse(
+                        level,
+                        selectedCourse,
+                        "social",
+                        "orphansFemale",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* ЛОВЗ */}
+              <div className="space-y-2">
+                <p className="font-medium text-sinii">
+                  {t("studentDirection.lovz")}
+                </p>
+
+                <div>
+                  <label>{t("studentDirection.male")}</label>
+                  <input
+                    type="number"
+                    placeholder={t("studentDirection.amountPlaceholder")}
+                    className="border p-1 w-full placeholder:text-gray-400"
+                    value={inputValue(currentCourse.social.lovzMale)}
+                    onChange={(e) =>
+                      updateCourse(
+                        level,
+                        selectedCourse,
+                        "social",
+                        "lovzMale",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>{t("studentDirection.female")}</label>
+                  <input
+                    type="number"
+                    placeholder={t("studentDirection.amountPlaceholder")}
+                    className="border p-1 w-full placeholder:text-gray-400"
+                    value={inputValue(currentCourse.social.lovzFemale)}
+                    onChange={(e) =>
+                      updateCourse(
+                        level,
+                        selectedCourse,
+                        "social",
+                        "lovzFemale",
+                        e.target.value === "" ? 0 : Number(e.target.value)
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="border p-4 rounded space-y-2">
+              <h3 className="font-semibold">
+                {t("studentDirection.graduates")}
+              </h3>
+
+              <label>{t("studentDirection.graduates_2024_2025")}</label>
+
+              <input
+                type="number"
+                placeholder={t("studentDirection.amountPlaceholder")}
+                className="border p-1 w-full placeholder:text-gray-400"
+                value={inputValue(currentCourse.graduates.count_2024_2025)}
+                onChange={(e) =>
+                  updateCourse(
+                    level,
+                    selectedCourse,
+                    "graduates",
+                    "count_2024_2025",
+                    e.target.value === "" ? 0 : Number(e.target.value)
+                  )
+                }
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      <button
+        disabled={!direction.level || !direction.code}
+        onClick={handleSubmit}
+        className="bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded"
+      >
+        {t("studentDirection.submit")}
+      </button>
     </div>
   );
 }
-
-export default ForeignStudents;

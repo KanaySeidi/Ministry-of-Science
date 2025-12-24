@@ -9,8 +9,8 @@ const Layout = () => {
 
   return (
     <>
-      <Header />
-      <main className="mt-24">
+      {signpage || <Header />}
+      <main className="">
         <Suspense fallback={<Loader />}>
           <Outlet />
         </Suspense>
