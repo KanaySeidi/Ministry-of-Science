@@ -14,6 +14,8 @@
         "welcomesubtitle" : "Здесь вы можете заполнить информацию о вашем ВУЗе."
     },
     "studentDirection": {
+      "group" : "Количество групп",
+      "courseCount" : "Всего студентов по курсу",
       "codePlaceholder": "Код направления",
       "bachelor": "Бакалавриат",
       "master": "Магистратура",
@@ -24,6 +26,7 @@
       "contract": "на контрактной основе",
       "contractPrice": "стоимость контракта",
       "foreignBudget": "из бюджетов других государств",
+      "includingForeignStudents": "в том числе иностранные студенты",
       "educationForm": "Форма обучения",
       "fullTime": "Очное",
       "distance": "Заочное",
@@ -37,6 +40,7 @@
       "social": "Социальные категории",
       "orphans": "Сироты",
       "lovz": "ЛОВЗ",
+      "total" : "Всего",
       "male": "Мужчины",
       "female": "Женщины",
       "graduates": "Выпускники",
@@ -44,7 +48,10 @@
       "sitizen" : "Страна гражданства",
       "countryPlaceholder" : "страна",
       "sitizenCount" : "Количество студентов",
-      "addCountry" : "Добавить страну"
-
+      "addCountry" : "Добавить страну",
+      "removeCountry" : "Удалить",
+      "ethnic" : "Этнические кыргызы",
+      "alayEvent" : "События: Аксыйские 2002, апрель-июнь 2010 и статус 'кайрылман'",
+      "goldenCertificate" : "Золотые сертификаты"
     }
 }

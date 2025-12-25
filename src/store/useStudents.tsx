@@ -14,7 +14,7 @@ type CourseData = {
     grantCount: number;
     contractCount: number;
     contractPrice: number;
-    foreignBudgetCount: number;
+
     fullTime: number;
     distance: number;
     evening: number;
@@ -24,13 +24,33 @@ type CourseData = {
     rent: number;
   };
   social: {
+    orphansCount: number;
     orphansMale: number;
     orphansFemale: number;
+    lovzCount: number;
     lovzMale: number;
     lovzFemale: number;
+    ethnicKyrgyzCount: number;
+    ethnicKyrgyzMale: number;
+    ethnicKyrgyzFemale: number;
+    alayEventCount: number;
+    alayEventMale: number;
+    alayEventFemale: number;
+    foreignBudgetCount: number;
+    foreignBudgetMale: number;
+    foreignBudgetFemale: number;
+    goldenCertificateCount: number;
+    goldenCertificateMale: number;
+    goldenCertificateFemale: number;
   };
   graduates: {
     count_2024_2025: number;
+  };
+  studentsTotal: {
+    group: number;
+    total: number;
+    male: number;
+    female: number;
   };
 };
 
@@ -52,16 +72,14 @@ type State = {
   setLevel: (level: Level) => void;
   setSelectedCourse: (course: Course) => void;
 
-  // 🔹 для обычных секций
   updateCourse: (
     level: Level,
     course: Course,
-    section: "education" | "living" | "social" | "graduates",
+    section: "education" | "living" | "social" | "graduates" | "studentsTotal",
     field: string,
     value: number
   ) => void;
 
-  // 🔹 для foreign[]
   addForeignStudent: (level: Level, course: Course) => void;
   updateForeignStudent: (
     level: Level,
@@ -81,7 +99,6 @@ const emptyCourse = (): CourseData => ({
     grantCount: 0,
     contractCount: 0,
     contractPrice: 0,
-    foreignBudgetCount: 0,
     fullTime: 0,
     distance: 0,
     evening: 0,
@@ -91,13 +108,33 @@ const emptyCourse = (): CourseData => ({
     rent: 0,
   },
   social: {
+    orphansCount: 0,
     orphansMale: 0,
     orphansFemale: 0,
+    lovzCount: 0,
     lovzMale: 0,
     lovzFemale: 0,
+    ethnicKyrgyzCount: 0,
+    ethnicKyrgyzMale: 0,
+    ethnicKyrgyzFemale: 0,
+    alayEventCount: 0,
+    alayEventMale: 0,
+    alayEventFemale: 0,
+    foreignBudgetCount: 0,
+    foreignBudgetMale: 0,
+    foreignBudgetFemale: 0,
+    goldenCertificateCount: 0,
+    goldenCertificateMale: 0,
+    goldenCertificateFemale: 0,
   },
   graduates: {
     count_2024_2025: 0,
+  },
+  studentsTotal: {
+    group: 0,
+    total: 0,
+    male: 0,
+    female: 0,
   },
 });
 

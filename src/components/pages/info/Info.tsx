@@ -5,7 +5,6 @@ import { UNIVERSITIES } from "@/utils/Universitets";
 import { currentUnivId } from "@/api/auth";
 import { useTranslation } from "react-i18next";
 import StudentDirectionPage from "@/components/organisms/studentsdirection/StudentsDirections";
-import ForeignStudents from "@/components/organisms/foreignStudents/ForeignStudents";
 
 const Info: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,20 +47,8 @@ const Info: React.FC = () => {
         >
           Контингент студентов
         </button>
-
-        <button
-          onClick={() => setActiveTab("mtb")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "mtb" ? "bg-sinii text-white" : "border text-sinii"
-          }`}
-        >
-          Иностарнные студенты
-        </button>
       </div>
-      <div>
-        {activeTab === "students" && <StudentDirectionPage />}
-        {activeTab === "mtb" && <ForeignStudents />}
-      </div>
+      <div>{activeTab === "students" && <StudentDirectionPage />}</div>
     </div>
   );
 };
