@@ -7,7 +7,7 @@ const Header = () => {
 
   return (
     <>
-      <div className="w-full h-24 fixed top-0 left-0  bg-sinii border-b border-white">
+      <div className="w-full h-24 fixed top-0 left-0  bg-sinii border-b border-white z-40">
         <div className="w-11/12 h-full mx-auto flex justify-between items-center backdrop-blur-md">
           <div className="flex gap-5 h-full items-center">
             <img src={gerb} alt="" className="size-14" />

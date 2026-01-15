@@ -1,3 +1,5 @@
+import type { CourseData } from "./CourseData";
+
 export type LoginValues = {
   login: string;
   password: string;
@@ -92,4 +94,11 @@ export const initialValues: Values = {
   foreign_students: [],
   scholarships: [],
   mtb: {},
+};
+
+export type UniversityReport = {
+  universityId: string;
+  universityName: string;
+  year: "2024-2025";
+  courses: Record<1 | 2 | 3 | 4, CourseData>;
 };

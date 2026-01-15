@@ -1,11 +1,15 @@
-import { useStudentDirectionStore } from "@/store/useStudents";
+import { useStudentDirectionStore } from "@/store/user/useStudents";
+import { useContingentFormDataStore } from "@/store/form/useContingentFormDataStore";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
+
+type UiLevel = "bachelor" | "master" | "specialist";
 
 export default function ForeignStudents({
   level,
   course,
 }: {
-  level: "bachelor" | "master";
+  level: UiLevel;
   course: 1 | 2 | 3 | 4;
 }) {
   const {
@@ -15,9 +19,13 @@ export default function ForeignStudents({
     removeForeignStudent,
   } = useStudentDirectionStore();
 
+  const { countries = [] } = useContingentFormDataStore();
   const { t } = useTranslation();
 
-  const currentCourse = coursesByLevel[level][course];
+  const currentCourse = coursesByLevel[level]?.[course];
+  if (!currentCourse) return null;
+
+  const inputValue = (v: number) => (v === 0 ? "" : v);
 
   return (
     <div className="border p-4 rounded space-y-4">
@@ -27,20 +35,19 @@ export default function ForeignStudents({
 
       {currentCourse.foreign.map((item, idx) => (
         <div key={idx} className="space-y-2">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <label>{t("studentDirection.sitizen")}</label>
             <button
               type="button"
               onClick={() => removeForeignStudent(level, course, idx)}
-              className="text-white bg-red-500 px-3 py-2 rounded-md text-sm cursor-pointer"
+              className="text-white bg-red-500 px-3 py-1 rounded-md text-sm"
             >
               {t("studentDirection.removeCountry")}
             </button>
           </div>
 
-          <input
-            type="text"
-            placeholder={t("studentDirection.countryPlaceholder")}
+          {/* COUNTRY */}
+          <select
             className="border p-2 w-full"
             value={item.country}
             onChange={(e) =>
@@ -49,16 +56,27 @@ export default function ForeignStudents({
                 course,
                 idx,
                 "country",
-                e.target.value
+                Number(e.target.value)
               )
             }
-          />
+          >
+            <option value={0}>
+              {t("studentDirection.countryPlaceholder")}
+            </option>
 
+            {countries.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.title}
+              </option>
+            ))}
+          </select>
+
+          {/* COUNT */}
           <input
             type="number"
             placeholder={t("studentDirection.amountPlaceholder")}
             className="border p-2 w-full"
-            value={item.count || ""}
+            value={inputValue(item.count)}
             onChange={(e) =>
               updateForeignStudent(
                 level,

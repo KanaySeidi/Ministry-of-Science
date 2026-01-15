@@ -1,51 +1,37 @@
 import { create } from "zustand";
 
-export type Level = "bachelor" | "master";
+/* ================== TYPES ================== */
+
 export type Course = 1 | 2 | 3 | 4;
 
 type ForeignStudent = {
-  country: string;
+  country: number; // ID страны
   count: number;
+};
+
+type SocialValue = {
+  all: number;
+  male: number;
+  female: number;
 };
 
 type CourseData = {
   foreign: ForeignStudent[];
+
   education: {
     grantCount: number;
     contractCount: number;
     contractPrice: number;
-
-    fullTime: number;
-    distance: number;
-    evening: number;
   };
+
   living: {
     dormitory: number;
     rent: number;
   };
-  social: {
-    orphansCount: number;
-    orphansMale: number;
-    orphansFemale: number;
-    lovzCount: number;
-    lovzMale: number;
-    lovzFemale: number;
-    ethnicKyrgyzCount: number;
-    ethnicKyrgyzMale: number;
-    ethnicKyrgyzFemale: number;
-    alayEventCount: number;
-    alayEventMale: number;
-    alayEventFemale: number;
-    foreignBudgetCount: number;
-    foreignBudgetMale: number;
-    foreignBudgetFemale: number;
-    goldenCertificateCount: number;
-    goldenCertificateMale: number;
-    goldenCertificateFemale: number;
-  };
-  graduates: {
-    count_2024_2025: number;
-  };
+
+  /** key = social_item.id */
+  social: Record<number, SocialValue>;
+
   studentsTotal: {
     group: number;
     total: number;
@@ -56,9 +42,11 @@ type CourseData = {
 
 type State = {
   direction: {
+    programId: number | null;
     code: string;
     name: string;
-    level: Level | null;
+    eduLevelId: number | null; // edu-levels
+    eduFormId: number | null; // edu-forms
   };
 
   selectedCourse: Course;
@@ -66,70 +54,77 @@ type State = {
   coursesByLevel: {
     bachelor: Record<Course, CourseData>;
     master: Record<Course, CourseData>;
+    specialist: Record<Course, CourseData>;
   };
 
-  setDirectionCode: (code: string, name: string) => void;
-  setLevel: (level: Level) => void;
+  /* ---------- setters ---------- */
+
+  setDirectionCode: (code: string, name: string, programId?: number) => void;
+
+  setEduLevel: (eduLevelId: number) => void;
+  setEduForm: (eduFormId: number) => void;
+
   setSelectedCourse: (course: Course) => void;
 
+  /* ---------- updates ---------- */
+
   updateCourse: (
-    level: Level,
+    level: "bachelor" | "master" | "specialist",
     course: Course,
-    section: "education" | "living" | "social" | "graduates" | "studentsTotal",
+    section: "education" | "living" | "studentsTotal",
     field: string,
     value: number
   ) => void;
 
-  addForeignStudent: (level: Level, course: Course) => void;
+  updateSocial: (
+    level: "bachelor" | "master" | "specialist",
+    course: Course,
+    socialId: number,
+    value: SocialValue
+  ) => void;
+
+  /* ---------- foreign ---------- */
+
+  addForeignStudent: (
+    level: "bachelor" | "master" | "specialist",
+    course: Course
+  ) => void;
+
   updateForeignStudent: (
-    level: Level,
+    level: "bachelor" | "master" | "specialist",
     course: Course,
     index: number,
     field: "country" | "count",
-    value: string | number
+    value: number
   ) => void;
-  removeForeignStudent: (level: Level, course: Course, index: number) => void;
+
+  removeForeignStudent: (
+    level: "bachelor" | "master" | "specialist",
+    course: Course,
+    index: number
+  ) => void;
 
   reset: () => void;
 };
 
+/* ================== HELPERS ================== */
+
 const emptyCourse = (): CourseData => ({
-  foreign: [{ country: "", count: 0 }],
+  foreign: [],
+
   education: {
     grantCount: 0,
     contractCount: 0,
     contractPrice: 0,
-    fullTime: 0,
-    distance: 0,
-    evening: 0,
   },
+
   living: {
     dormitory: 0,
     rent: 0,
   },
-  social: {
-    orphansCount: 0,
-    orphansMale: 0,
-    orphansFemale: 0,
-    lovzCount: 0,
-    lovzMale: 0,
-    lovzFemale: 0,
-    ethnicKyrgyzCount: 0,
-    ethnicKyrgyzMale: 0,
-    ethnicKyrgyzFemale: 0,
-    alayEventCount: 0,
-    alayEventMale: 0,
-    alayEventFemale: 0,
-    foreignBudgetCount: 0,
-    foreignBudgetMale: 0,
-    foreignBudgetFemale: 0,
-    goldenCertificateCount: 0,
-    goldenCertificateMale: 0,
-    goldenCertificateFemale: 0,
-  },
-  graduates: {
-    count_2024_2025: 0,
-  },
+
+  social: {},
+
   studentsTotal: {
     group: 0,
     total: 0,
@@ -145,11 +140,15 @@ const initCourses = (): Record<Course, CourseData> => ({
   4: emptyCourse(),
 });
 
+/* ================== STORE ================== */
+
 export const useStudentDirectionStore = create<State>((set) => ({
   direction: {
+    programId: null,
     code: "",
     name: "",
-    level: null,
+    eduLevelId: null,
+    eduFormId: null,
   },
 
   selectedCourse: 1,
@@ -157,21 +156,35 @@ export const useStudentDirectionStore = create<State>((set) => ({
   coursesByLevel: {
     bachelor: initCourses(),
     master: initCourses(),
+    specialist: initCourses(),
   },
 
-  setDirectionCode: (code, name) =>
+  /* ---------- direction ---------- */
+
+  setDirectionCode: (code, name, programId) =>
     set((state) => ({
-      direction: { ...state.direction, code, name },
+      direction: {
+        ...state.direction,
+        code,
+        name,
+        programId: programId ?? state.direction.programId,
+      },
     })),
 
-  setLevel: (level) =>
+  setEduLevel: (eduLevelId) =>
     set((state) => ({
-      direction: { ...state.direction, level },
+      direction: { ...state.direction, eduLevelId },
+    })),
+
+  setEduForm: (eduFormId) =>
+    set((state) => ({
+      direction: { ...state.direction, eduFormId },
     })),
 
   setSelectedCourse: (course) => set({ selectedCourse: course }),
 
-  // 🔹 обычные секции
+  /* ---------- standard sections ---------- */
+
   updateCourse: (level, course, section, field, value) =>
     set((state) => ({
       coursesByLevel: {
@@ -189,7 +202,27 @@ export const useStudentDirectionStore = create<State>((set) => ({
       },
     })),
 
-  // 🔹 foreign[]
+  /* ---------- social (KEY PART) ---------- */
+
+  updateSocial: (level, course, socialId, value) =>
+    set((state) => ({
+      coursesByLevel: {
+        ...state.coursesByLevel,
+        [level]: {
+          ...state.coursesByLevel[level],
+          [course]: {
+            ...state.coursesByLevel[level][course],
+            social: {
+              ...state.coursesByLevel[level][course].social,
+              [socialId]: value,
+            },
+          },
+        },
+      },
+    })),
+
+  /* ---------- foreign students ---------- */
+
   addForeignStudent: (level, course) =>
     set((state) => ({
       coursesByLevel: {
@@ -200,7 +233,7 @@ export const useStudentDirectionStore = create<State>((set) => ({
             ...state.coursesByLevel[level][course],
             foreign: [
               ...state.coursesByLevel[level][course].foreign,
-              { country: "", count: 0 },
+              { country: 0, count: 0 },
             ],
           },
         },
@@ -242,13 +275,22 @@ export const useStudentDirectionStore = create<State>((set) => ({
       },
     })),
 
+  /* ---------- reset ---------- */
+
   reset: () =>
     set({
-      direction: { code: "", name: "", level: null },
+      direction: {
+        programId: null,
+        code: "",
+        name: "",
+        eduLevelId: null,
+        eduFormId: null,
+      },
       selectedCourse: 1,
       coursesByLevel: {
         bachelor: initCourses(),
         master: initCourses(),
+        specialist: initCourses(),
       },
     }),
 }));

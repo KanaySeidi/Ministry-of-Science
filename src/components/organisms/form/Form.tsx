@@ -1,45 +1,34 @@
-// src/components/LoginForm.tsx
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { authenticate } from "@/api/auth";
-import { initUnivs } from "@/utils/storage";
-import { UNIVERSITIES } from "@/utils/Universitets";
-import { useNavigate } from "react-router-dom";
+import { useLogin } from "@/hooks/useLogin";
 
 const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const { login, loading, error } = useLogin();
 
-  React.useEffect(() => {
-    initUnivs(UNIVERSITIES);
-  }, []);
-
-  const initialValues = { login: "", password: "" };
+  const initialValues = { username: "", password: "" };
 
   const validate = (values: typeof initialValues) => {
     const errors: Partial<typeof initialValues> = {};
-    if (!values.login.trim()) errors.login = "Введите логин";
+    if (!values.username.trim()) errors.username = "Введите логин";
     if (!values.password.trim()) errors.password = "Введите пароль";
     return errors;
   };
 
-  const onSubmit = (values: typeof initialValues, { setSubmitting }: any) => {
-    setApiError(null);
-    const res = authenticate(values.login, values.password);
-    if (res.ok && res.univ) {
-      navigate(`/info/${res.univ.id}`);
-    } else {
-      setApiError(res.message ?? "Ошибка");
+  const onSubmit = async (
+    values: typeof initialValues,
+    { setSubmitting }: any
+  ) => {
+    try {
+      await login(values.username, values.password);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
     <div className="max-w-md mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-4 text-white">
-        Введите данные ВУЗа
-      </h2>
+      <h2 className="text-3xl font-bold mb-4 text-white">Вход в систему</h2>
 
       <Formik
         initialValues={initialValues}
@@ -51,44 +40,41 @@ const LoginForm: React.FC = () => {
             <div>
               <Field
                 placeholder="Логин"
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-700 bg-white text-sinii rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                name="login"
+                name="username"
+                className="w-full px-3 py-3 bg-white rounded-md font-medium placeholder:font-normal"
               />
-              <div className="text-red-400 text-sm mt-1">
-                <ErrorMessage name="login" />
-              </div>
+              <ErrorMessage
+                name="username"
+                component="div"
+                className="text-red-500 text-sm"
+              />
             </div>
 
-            <div className="mt-4 flex gap-2">
+            <div className="flex gap-2">
               <Field
                 placeholder="Пароль"
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-700 bg-white text-sinii rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 type={showPassword ? "text" : "password"}
                 name="password"
-                autoComplete="current-password"
+                className="w-full px-3 py-3 bg-white rounded-md font-medium placeholder:font-normal"
               />
 
               <button
                 type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="w-32 px-1 bg-white text-sinii rounded-md cursor-pointer hover:bg-white/80"
+                onClick={() => setShowPassword((p) => !p)}
+                className="w-40 bg-white rounded-md"
               >
                 {showPassword ? "Скрыть" : "Показать"}
               </button>
             </div>
 
-            {apiError && <div className="text-red-600">{apiError}</div>}
+            {error && <div className="text-red-600 text-sm">{error}</div>}
 
             <button
               type="submit"
-              disabled={isSubmitting || !isValid || !dirty}
-              className={`w-full py-2 rounded text-white ${
-                isSubmitting || !isValid || !dirty
-                  ? "bg-gray-400"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              }`}
+              disabled={isSubmitting || !isValid || !dirty || loading}
+              className="w-full py-2 bg-indigo-600 text-white rounded"
             >
-              {isSubmitting ? "Отправка..." : "Войти"}
+              {loading ? "Вход..." : "Войти"}
             </button>
           </Form>
         )}

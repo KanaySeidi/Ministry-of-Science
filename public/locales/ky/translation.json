@@ -52,6 +52,8 @@
       "removeCountry" : "Өчүрүү",
       "ethnic": "Этностук кыргыздар",
       "alayEvent": "Аксый окуялары",
-      "goldenCertificate": "Алтын сертификаттар"
+      "goldenCertificate": "Алтын сертификаттар",
+      "selectEduForm" : "Окуу формасын тандаңыз"
+
     }
 }

@@ -1,0 +1,1 @@
+import api from "@/store/auth/axiosConfig"; export const loginRequest = async ( username: string, password: string ) => { const res = await api.post("/ru/api/auth/login/", { username, password, }); return res.data; }; export const meRequest = async () => { const res = await api.get("/ru/api/auth/me/"); return res.data; };

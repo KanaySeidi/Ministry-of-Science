@@ -2,7 +2,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UNIVERSITIES } from "@/utils/Universitets";
-import { currentUnivId } from "@/api/auth";
+import { currentUnivId } from "@/api/auth/auth";
 import { useTranslation } from "react-i18next";
 import StudentDirectionPage from "@/components/organisms/studentsdirection/StudentsDirections";
 
